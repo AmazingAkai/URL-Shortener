@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS url_requests;
+DROP TABLE IF EXISTS urls;

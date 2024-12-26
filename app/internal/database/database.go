@@ -15,7 +15,6 @@ var (
 )
 
 func New() *sql.DB {
-	// Reuse Connection
 	if dbInstance != nil {
 		return dbInstance
 	}

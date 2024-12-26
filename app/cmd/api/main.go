@@ -10,9 +10,9 @@ import (
 	"syscall"
 	"time"
 
+	_ "github.com/AmazingAkai/URL-Shortener/app/internal/autoload"
+	"github.com/AmazingAkai/URL-Shortener/app/internal/routes"
 	"github.com/AmazingAkai/URL-Shortener/app/internal/server"
-
-	_ "github.com/joho/godotenv/autoload"
 )
 
 func gracefulShutdown(fiberServer *server.FiberServer, done chan bool) {
@@ -36,7 +36,7 @@ func gracefulShutdown(fiberServer *server.FiberServer, done chan bool) {
 
 func main() {
 	server := server.New()
-	server.RegisterFiberRoutes()
+	routes.RegisterURLRoutes(server)
 
 	go func() {
 		port, _ := strconv.Atoi(os.Getenv("PORT"))

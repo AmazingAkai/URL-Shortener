@@ -42,7 +42,6 @@ func (s *FiberServer) ShutdownWithContext(ctx context.Context) error {
 		return err
 	}
 
-	// Close the database connection
 	if s.db != nil {
 		if err := s.db.Close(); err != nil {
 			return err
