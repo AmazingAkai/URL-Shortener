@@ -17,13 +17,17 @@ func main() {
 	db := database.New()
 	defer db.Close()
 
-	steps := flag.Int("steps", 1, "number of steps")
+	var (
+		steps     = 1
+		direction = "down"
+	)
+
+	flag.IntVar(&steps, "steps", steps, "number of steps")
 	flag.Parse()
 
-	direction := "down"
-	if *steps > 0 {
+	if steps > 0 {
 		direction = "up"
-	} else if *steps == 0 {
+	} else if steps == 0 {
 		log.Fatal("steps must not be 0")
 	}
 
@@ -39,10 +43,10 @@ func main() {
 		log.Fatalf("An error occured initializing the migration: %v", err)
 	}
 
-	err = m.Steps(*steps)
+	err = m.Steps(steps)
 	if err != nil {
 		log.Fatalf("An error occured running the migration: %v", err)
 	}
 
-	log.Printf("Ran %d migration(s) %s", int(math.Abs(float64(*steps))), direction)
+	log.Printf("Ran %d migration(s) %s", int(math.Abs(float64(steps))), direction)
 }
