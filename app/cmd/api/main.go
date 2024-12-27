@@ -3,52 +3,49 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
-	"os"
+
+	"net/http"
 	"os/signal"
-	"strconv"
 	"syscall"
 	"time"
 
-	_ "github.com/AmazingAkai/URL-Shortener/app/internal/autoload"
-	"github.com/AmazingAkai/URL-Shortener/app/internal/routes"
+	"github.com/AmazingAkai/URL-Shortener/app/internal/log"
 	"github.com/AmazingAkai/URL-Shortener/app/internal/server"
+	"github.com/AmazingAkai/URL-Shortener/app/internal/utils"
 )
 
-func gracefulShutdown(fiberServer *server.FiberServer, done chan bool) {
+func gracefulShutdown(s *server.Server, done chan bool) {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
 	<-ctx.Done()
 
-	log.Println("shutting down gracefully, press Ctrl+C again to force")
+	log.Info("Shutting down gracefully, press Ctrl+C again to force")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	if err := fiberServer.ShutdownWithContext(ctx); err != nil {
-		log.Printf("Server forced to shutdown with error: %v", err)
+	if err := s.Shutdown(ctx); err != nil {
+		log.Infof("Server forced to shutdown with error: %v", err)
 	}
 
-	log.Println("Server exiting")
+	log.Info("Server exiting")
 
 	done <- true
 }
 
 func main() {
+	utils.LoadEnv()
+
 	server := server.New()
-	routes.RegisterURLRoutes(server)
-
-	go func() {
-		port, _ := strconv.Atoi(os.Getenv("PORT"))
-		err := server.Listen(fmt.Sprintf(":%d", port))
-		if err != nil {
-			panic(fmt.Sprintf("http server error: %s", err))
-		}
-	}()
-
 	done := make(chan bool, 1)
+
 	go gracefulShutdown(server, done)
 
+	err := server.Run()
+	if err != nil && err != http.ErrServerClosed {
+		panic(fmt.Sprintf("http server error: %s", err))
+	}
+
 	<-done
-	log.Println("Graceful shutdown complete.")
+	log.Infof("Graceful shutdown complete.")
 }

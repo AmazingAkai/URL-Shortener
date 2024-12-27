@@ -1,50 +1,67 @@
 package routes
 
 import (
+	"fmt"
+	"net/http"
+
 	"github.com/AmazingAkai/URL-Shortener/app/internal/database/queries"
 	"github.com/AmazingAkai/URL-Shortener/app/internal/models"
-	"github.com/AmazingAkai/URL-Shortener/app/internal/server"
-	"github.com/AmazingAkai/URL-Shortener/app/pkg/utils"
-	"github.com/go-playground/validator/v10"
-	"github.com/gofiber/fiber/v2"
+	"github.com/AmazingAkai/URL-Shortener/app/internal/utils"
+	"github.com/gorilla/mux"
 )
 
-var validate = validator.New()
+func redirectShortURLHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
 
-func RedirectShortURLHandler(c *fiber.Ctx) error {
-	shortURL := c.Params("short_url")
-
-	longURL, err := queries.GetLongURL(shortURL)
+	longURL, err := queries.GetLongURL(vars["short_url"])
 	if err != nil {
-		return c.Status(fiber.StatusNotFound).SendString("Short URL not found")
+		utils.NotFoundError(w)
+		return
 	}
 
-	return c.Redirect(longURL)
+	http.Redirect(w, r, longURL, http.StatusFound)
 }
 
-func CreateShortURLHandler(c *fiber.Ctx) error {
+func createShortURLHandler(w http.ResponseWriter, r *http.Request) {
 	var url models.URL
-	if err := c.BodyParser(&url); err != nil {
-		return err
+	if err := utils.ReadJSON(r.Body, &url); err != nil {
+		utils.ErrorResponse(w, http.StatusBadRequest, err)
+		return
 	}
 
-	url.ShortURL = utils.GenerateShortURL()
-	// TODO: Check if this short url already exists in the database
+	attempts := 0
+	for {
+		if attempts >= 10 {
+			utils.ServerError(w, fmt.Errorf("failed to generate unique short URL after %d attempts", attempts))
+			return
+		}
 
-	if err := validate.Struct(url); err != nil {
-		return err
+		url.ShortURL = utils.GenerateShortURL()
+		exists, err := queries.ShortURLExists(url.ShortURL)
+		if err != nil {
+			utils.ServerError(w, err)
+			return
+		}
+
+		if !exists {
+			break
+		}
+		attempts++
 	}
 
+	if err := utils.ValidateStruct(url); err != nil {
+		utils.ValidationError(w, err)
+		return
+	}
 	if err := queries.CreateShortURL(url); err != nil {
-		return err
+		utils.ServerError(w, err)
+		return
 	}
 
-	return c.JSON(url)
+	utils.WriteJSON(w, http.StatusCreated, url)
 }
 
-func RegisterURLRoutes(s *server.FiberServer) {
-	s.App.Get("/:short_url", RedirectShortURLHandler)
-
-	api := s.App.Group("/urls")
-	api.Post("/", CreateShortURLHandler)
+func RegisterURLRoutes(router *mux.Router) {
+	router.HandleFunc("/{short_url}/", redirectShortURLHandler).Methods("GET")
+	router.HandleFunc("/urls/", createShortURLHandler).Methods("POST")
 }

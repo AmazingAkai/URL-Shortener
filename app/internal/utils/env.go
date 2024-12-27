@@ -1,9 +1,9 @@
-package autoload
+package utils
 
 import (
 	"github.com/joho/godotenv"
 )
 
-func init() {
+func LoadEnv() {
 	godotenv.Load(".env.local")
 }

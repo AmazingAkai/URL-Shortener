@@ -15,3 +15,9 @@ func GetLongURL(shortURL string) (string, error) {
 	err := database.New().QueryRow("SELECT original_url FROM urls WHERE short_url = $1", shortURL).Scan(&longURL)
 	return longURL, err
 }
+
+func ShortURLExists(shortURL string) (bool, error) {
+	var exists bool
+	err := database.New().QueryRow("SELECT EXISTS (SELECT 1 FROM urls WHERE short_url = $1)", shortURL).Scan(&exists)
+	return exists, err
+}

@@ -2,26 +2,29 @@ package database
 
 import (
 	"database/sql"
-	"log"
+
 	"os"
 
+	"github.com/AmazingAkai/URL-Shortener/app/internal/log"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	_ "github.com/joho/godotenv/autoload"
 )
 
 var (
-	dbUri      = os.Getenv("DATABASE_URI")
-	dbInstance *sql.DB
+	db *sql.DB
 )
 
 func New() *sql.DB {
-	if dbInstance != nil {
-		return dbInstance
+	if db != nil {
+		return db
 	}
 
-	dbInstance, err := sql.Open("pgx", dbUri)
+	dbInstance, err := sql.Open("pgx", os.Getenv("DATABASE_URI"))
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to connect to the database: %v", err)
+	}
+	if err := dbInstance.Ping(); err != nil {
+		log.Fatalf("Failed to connect to the database: %v", err)
 	}
 
 	return dbInstance

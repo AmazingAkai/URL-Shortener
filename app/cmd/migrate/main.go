@@ -2,33 +2,35 @@ package main
 
 import (
 	"flag"
-	"log"
+
 	"math"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 
-	_ "github.com/AmazingAkai/URL-Shortener/app/internal/autoload"
 	"github.com/AmazingAkai/URL-Shortener/app/internal/database"
+	"github.com/AmazingAkai/URL-Shortener/app/internal/log"
+	"github.com/AmazingAkai/URL-Shortener/app/internal/utils"
 )
 
 func main() {
+	utils.LoadEnv()
+
 	db := database.New()
 	defer db.Close()
 
-	var (
-		steps     = 1
-		direction = "down"
-	)
+	steps := 1
+	direction := "down"
 
 	flag.IntVar(&steps, "steps", steps, "number of steps")
 	flag.Parse()
 
+	if steps == 0 {
+		log.Fatal("steps must not be 0")
+	}
 	if steps > 0 {
 		direction = "up"
-	} else if steps == 0 {
-		log.Fatal("steps must not be 0")
 	}
 
 	driver, err := postgres.WithInstance(db, &postgres.Config{})
@@ -48,5 +50,5 @@ func main() {
 		log.Fatalf("An error occured running the migration: %v", err)
 	}
 
-	log.Printf("Ran %d migration(s) %s", int(math.Abs(float64(steps))), direction)
+	log.Infof("Ran %d migration(s) %s", int(math.Abs(float64(steps))), direction)
 }
