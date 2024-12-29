@@ -9,9 +9,9 @@ import (
 	"syscall"
 	"time"
 
+	_ "github.com/AmazingAkai/URL-Shortener/app/internal/env"
 	"github.com/AmazingAkai/URL-Shortener/app/internal/log"
 	"github.com/AmazingAkai/URL-Shortener/app/internal/server"
-	"github.com/AmazingAkai/URL-Shortener/app/internal/utils"
 )
 
 func gracefulShutdown(s *server.Server, done chan bool) {
@@ -34,7 +34,6 @@ func gracefulShutdown(s *server.Server, done chan bool) {
 }
 
 func main() {
-	utils.LoadEnv()
 
 	server := server.New()
 	done := make(chan bool, 1)

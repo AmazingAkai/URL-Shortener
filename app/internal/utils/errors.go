@@ -9,11 +9,10 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-type M map[string]interface{}
-type ErrorM map[string][]string
+type ErrorMap map[string][]string
 
 func ValidationError(w http.ResponseWriter, vErr error) {
-	resp := ErrorM{}
+	resp := ErrorMap{}
 
 	switch err := vErr.(type) {
 	case validator.ValidationErrors:
@@ -42,7 +41,7 @@ func ServerError(w http.ResponseWriter, err error) {
 }
 
 func ErrorResponse(w http.ResponseWriter, code int, errs interface{}) {
-	WriteJSON(w, code, M{"errors": errs})
+	WriteJSON(w, code, Map{"errors": errs})
 }
 
 func checkTagRules(e validator.FieldError) (errMsg string) {

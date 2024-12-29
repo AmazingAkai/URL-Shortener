@@ -25,7 +25,7 @@ func redirectShortURLHandler(w http.ResponseWriter, r *http.Request) {
 func createShortURLHandler(w http.ResponseWriter, r *http.Request) {
 	var url models.URL
 	if err := utils.ReadJSON(r.Body, &url); err != nil {
-		utils.ErrorResponse(w, http.StatusBadRequest, err)
+		utils.BadRequestError(w)
 		return
 	}
 
@@ -37,13 +37,13 @@ func createShortURLHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		url.ShortURL = utils.GenerateShortURL()
-		exists, err := queries.ShortURLExists(url.ShortURL)
+		longURL, err := queries.GetLongURL(url.ShortURL)
 		if err != nil {
 			utils.ServerError(w, err)
 			return
 		}
 
-		if !exists {
+		if longURL == "" {
 			break
 		}
 		attempts++
@@ -53,7 +53,7 @@ func createShortURLHandler(w http.ResponseWriter, r *http.Request) {
 		utils.ValidationError(w, err)
 		return
 	}
-	if err := queries.CreateShortURL(url); err != nil {
+	if err := queries.CreateShortURL(&url); err != nil {
 		utils.ServerError(w, err)
 		return
 	}
@@ -62,6 +62,6 @@ func createShortURLHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func RegisterURLRoutes(router *mux.Router) {
-	router.HandleFunc("/{short_url}/", redirectShortURLHandler).Methods("GET")
-	router.HandleFunc("/urls/", createShortURLHandler).Methods("POST")
+	router.HandleFunc("/{short_url}", redirectShortURLHandler).Methods("GET")
+	router.HandleFunc("/urls", createShortURLHandler).Methods("POST")
 }

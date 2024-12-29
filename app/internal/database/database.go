@@ -19,13 +19,13 @@ func New() *sql.DB {
 		return db
 	}
 
-	dbInstance, err := sql.Open("pgx", os.Getenv("DATABASE_URI"))
+	DB, err := sql.Open("pgx", os.Getenv("DATABASE_URI"))
 	if err != nil {
 		log.Fatalf("Failed to connect to the database: %v", err)
 	}
-	if err := dbInstance.Ping(); err != nil {
+	if err := DB.Ping(); err != nil {
 		log.Fatalf("Failed to connect to the database: %v", err)
 	}
 
-	return dbInstance
+	return DB
 }

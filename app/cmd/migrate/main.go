@@ -10,13 +10,11 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 
 	"github.com/AmazingAkai/URL-Shortener/app/internal/database"
+	_ "github.com/AmazingAkai/URL-Shortener/app/internal/env"
 	"github.com/AmazingAkai/URL-Shortener/app/internal/log"
-	"github.com/AmazingAkai/URL-Shortener/app/internal/utils"
 )
 
 func main() {
-	utils.LoadEnv()
-
 	db := database.New()
 	defer db.Close()
 

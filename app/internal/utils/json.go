@@ -8,6 +8,8 @@ import (
 	"github.com/AmazingAkai/URL-Shortener/app/internal/log"
 )
 
+type Map map[string]interface{}
+
 func WriteJSON(w http.ResponseWriter, code int, data interface{}) {
 	jsonBytes, err := json.Marshal(data)
 

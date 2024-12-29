@@ -3,7 +3,6 @@ CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(255),
-    google_id VARCHAR(255) UNIQUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 -- URLs Table

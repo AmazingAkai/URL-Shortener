@@ -25,11 +25,18 @@ type Server struct {
 }
 
 func New() *Server {
-	router := mux.NewRouter().StrictSlash(true)
-	router.Use(cors.Default().Handler)
+	router := mux.NewRouter()
+
+	router.Use(cors.New(cors.Options{
+		AllowedOrigins: []string{"*"},
+		AllowedHeaders: []string{"Accept", "Authorization"},
+		AllowedMethods: []string{"GET", "POST", "OPTIONS"},
+	}).Handler)
 	router.Use(middleware.LoggerMiddleware)
+	router.Use(middleware.JwtMiddleware)
 
 	routes.RegisterURLRoutes(router)
+	routes.RegisterUserRoutes(router)
 
 	server := &Server{
 		server: &http.Server{
