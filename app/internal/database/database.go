@@ -7,7 +7,6 @@ import (
 
 	"github.com/AmazingAkai/URL-Shortener/app/internal/log"
 	_ "github.com/jackc/pgx/v5/stdlib"
-	_ "github.com/joho/godotenv/autoload"
 )
 
 var (
@@ -19,13 +18,28 @@ func New() *sql.DB {
 		return db
 	}
 
-	DB, err := sql.Open("pgx", os.Getenv("DATABASE_URI"))
+	var err error
+	db, err = sql.Open("pgx", os.Getenv("DATABASE_URI"))
 	if err != nil {
-		log.Fatalf("Failed to connect to the database: %v", err)
+		log.Fatalf("Failed to open the database connection: %v", err)
 	}
-	if err := DB.Ping(); err != nil {
+
+	db.SetMaxOpenConns(10)
+	db.SetMaxIdleConns(5)
+	db.SetConnMaxLifetime(0)
+
+	if err := db.Ping(); err != nil {
 		log.Fatalf("Failed to connect to the database: %v", err)
 	}
 
-	return DB
+	return db
+}
+
+func Close() {
+	if db != nil {
+		err := db.Close()
+		if err != nil {
+			log.Fatalf("Failed to close the database connection: %v", err)
+		}
+	}
 }

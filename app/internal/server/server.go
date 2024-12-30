@@ -16,7 +16,6 @@ import (
 	"github.com/AmazingAkai/URL-Shortener/app/internal/routes"
 
 	"github.com/gorilla/mux"
-	"github.com/rs/cors"
 )
 
 type Server struct {
@@ -27,13 +26,10 @@ type Server struct {
 func New() *Server {
 	router := mux.NewRouter()
 
-	router.Use(cors.New(cors.Options{
-		AllowedOrigins: []string{"*"},
-		AllowedHeaders: []string{"Accept", "Authorization"},
-		AllowedMethods: []string{"GET", "POST", "OPTIONS"},
-	}).Handler)
+	router.Use(middleware.CORSMiddleware)
 	router.Use(middleware.LoggerMiddleware)
 	router.Use(middleware.JwtMiddleware)
+	router.Use(middleware.GzipMiddleware)
 
 	routes.RegisterURLRoutes(router)
 	routes.RegisterUserRoutes(router)

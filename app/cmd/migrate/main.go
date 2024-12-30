@@ -16,7 +16,7 @@ import (
 
 func main() {
 	db := database.New()
-	defer db.Close()
+	defer database.Close()
 
 	steps := 1
 	direction := "down"

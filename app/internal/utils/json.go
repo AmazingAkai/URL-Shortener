@@ -1,12 +1,15 @@
 package utils
 
 import (
-	"encoding/json"
 	"io"
 	"net/http"
 
+	jsoniter "github.com/json-iterator/go"
+
 	"github.com/AmazingAkai/URL-Shortener/app/internal/log"
 )
+
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 type Map map[string]interface{}
 

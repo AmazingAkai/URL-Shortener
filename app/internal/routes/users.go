@@ -2,6 +2,7 @@ package routes
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/AmazingAkai/URL-Shortener/app/internal/database/queries"
 	"github.com/AmazingAkai/URL-Shortener/app/internal/models"
@@ -10,48 +11,49 @@ import (
 )
 
 func createUserHandler(w http.ResponseWriter, r *http.Request) {
-	var user models.User
-	if err := utils.ReadJSON(r.Body, &user); err != nil {
+	var userInput models.User
+
+	if err := utils.ReadJSON(r.Body, &userInput); err != nil {
 		utils.BadRequestError(w)
 		return
 	}
-
-	if err := utils.ValidateStruct(user); err != nil {
+	if err := utils.ValidateStruct(userInput); err != nil {
 		utils.ValidationError(w, err)
 		return
 	}
 
-	if err := queries.CreateUser(&user); err != nil {
-		if err.Error() == "email already exists" {
-			utils.ErrorResponse(w, http.StatusConflict, err.Error())
+	user, err := queries.CreateUser(userInput)
+	if err != nil {
+		if strings.Contains(err.Error(), "duplicate key value violates unique constraint \"users_email_key\"") {
+			utils.ErrorResponse(w, http.StatusConflict, "email already exists")
 			return
 		}
 		utils.ServerError(w, err)
 		return
 	}
 
-	user.Password = "" // Don't return the password
 	utils.WriteJSON(w, http.StatusCreated, user)
 }
 
 func logInHandler(w http.ResponseWriter, r *http.Request) {
-	var user models.User
-	if err := utils.ReadJSON(r.Body, &user); err != nil {
+	var userInput models.User
+	if err := utils.ReadJSON(r.Body, &userInput); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if err := utils.ValidateStruct(user); err != nil {
+	if err := utils.ValidateStruct(userInput); err != nil {
 		utils.ValidationError(w, err)
 		return
 	}
 
-	if err := queries.AuthenticateUser(&user); err != nil {
+	user, err := queries.AuthenticateUser(userInput)
+	if err != nil {
 		utils.ErrorResponse(w, http.StatusUnauthorized, err.Error())
 		return
 	}
 
-	token, exp, err := utils.GenerateJWT(&user)
+	token, exp, err := utils.GenerateJWT(user)
 	if err != nil {
 		utils.ServerError(w, err)
 		return

@@ -1,12 +1,12 @@
 package routes
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/AmazingAkai/URL-Shortener/app/internal/database/queries"
 	"github.com/AmazingAkai/URL-Shortener/app/internal/models"
 	"github.com/AmazingAkai/URL-Shortener/app/internal/utils"
+	"github.com/AmazingAkai/URL-Shortener/app/internal/utils/constants"
 	"github.com/gorilla/mux"
 )
 
@@ -14,7 +14,7 @@ func redirectShortURLHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
 	longURL, err := queries.GetLongURL(vars["short_url"])
-	if err != nil {
+	if err != nil || longURL == "" {
 		utils.NotFoundError(w)
 		return
 	}
@@ -23,37 +23,21 @@ func redirectShortURLHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func createShortURLHandler(w http.ResponseWriter, r *http.Request) {
-	var url models.URL
-	if err := utils.ReadJSON(r.Body, &url); err != nil {
+	var urlInput models.URL
+
+	if err := utils.ReadJSON(r.Body, &urlInput); err != nil {
 		utils.BadRequestError(w)
 		return
 	}
-
-	attempts := 0
-	for {
-		if attempts >= 10 {
-			utils.ServerError(w, fmt.Errorf("failed to generate unique short URL after %d attempts", attempts))
-			return
-		}
-
-		url.ShortURL = utils.GenerateShortURL()
-		longURL, err := queries.GetLongURL(url.ShortURL)
-		if err != nil {
-			utils.ServerError(w, err)
-			return
-		}
-
-		if longURL == "" {
-			break
-		}
-		attempts++
-	}
-
-	if err := utils.ValidateStruct(url); err != nil {
+	if err := utils.ValidateStruct(urlInput); err != nil {
 		utils.ValidationError(w, err)
 		return
 	}
-	if err := queries.CreateShortURL(&url); err != nil {
+
+	user := r.Context().Value(constants.USER_KEY).(*models.UserOut)
+	url, err := queries.CreateShortURL(urlInput, user)
+
+	if err != nil {
 		utils.ServerError(w, err)
 		return
 	}

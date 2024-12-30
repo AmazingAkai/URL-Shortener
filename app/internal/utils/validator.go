@@ -3,6 +3,7 @@ package utils
 import (
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -18,8 +19,23 @@ func init() {
 		}
 		return name
 	})
+	validate.RegisterValidation("futureDate", futureDate)
 }
 
 func ValidateStruct(input interface{}) error {
 	return validate.Struct(input)
+}
+
+func futureDate(fl validator.FieldLevel) bool {
+	fieldValue := fl.Field().Interface()
+	if fieldValue == nil {
+		return true
+	}
+
+	t, ok := fieldValue.(*time.Time)
+	if !ok {
+		return false
+	}
+
+	return t.After(time.Now())
 }

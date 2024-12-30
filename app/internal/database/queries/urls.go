@@ -2,26 +2,42 @@ package queries
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/AmazingAkai/URL-Shortener/app/internal/database"
 	"github.com/AmazingAkai/URL-Shortener/app/internal/models"
+	"github.com/AmazingAkai/URL-Shortener/app/internal/utils"
 )
 
-func CreateShortURL(url *models.URL) error {
-	query := `
-		INSERT INTO urls (original_url, short_url, expires_at) 
-		VALUES ($1, $2, $3) ON CONFLICT (short_url) 
-		DO UPDATE SET original_url = EXCLUDED.original_url, expires_at = EXCLUDED.expires_at
-		RETURNING id, original_url, short_url, created_at, expires_at`
-
-	err := database.New().QueryRow(query, url.LongURL, url.ShortURL, url.ExpiresAt).Scan(
-		&url.ID, &url.LongURL, &url.ShortURL, &url.CreatedAt, &url.ExpiresAt,
+func CreateShortURL(urlInput models.URL, user *models.UserOut) (*models.URLOut, error) {
+	var (
+		userID *int = nil
+		url         = &models.URLOut{}
 	)
-	if err != nil {
-		return err
+	if user != nil {
+		userID = &user.ID
 	}
-	return nil
+
+	shortURL, err := generateUniqueShortURL()
+	if err != nil {
+		return nil, err
+	}
+
+	query := `
+		INSERT INTO urls (user_id, original_url, short_url, expires_at) 
+		VALUES ($1, $2, $3, $4) ON CONFLICT (short_url) 
+		DO UPDATE SET original_url = EXCLUDED.original_url, expires_at = EXCLUDED.expires_at
+		RETURNING id, user_id, original_url, short_url, created_at, expires_at`
+
+	err = database.New().
+		QueryRow(query, userID, urlInput.LongURL, shortURL, urlInput.ExpiresAt).
+		Scan(&url.ID, &url.UserID, &url.LongURL, &url.ShortURL, &url.CreatedAt, &url.ExpiresAt)
+
+	if err != nil {
+		return nil, err
+	}
+	return url, nil
 }
 
 func GetLongURL(shortURL string) (string, error) {
@@ -40,4 +56,30 @@ func GetLongURL(shortURL string) (string, error) {
 	}
 
 	return longURL, err
+}
+
+func generateUniqueShortURL() (string, error) {
+	var (
+		shortURL string
+		attempts = 0
+	)
+
+	for {
+		if attempts >= 10 {
+			return "", fmt.Errorf("failed to generate unique short URL after %d attempts", attempts)
+		}
+
+		shortURL = utils.GenerateShortURL()
+		longURL, err := GetLongURL(shortURL)
+		if err != nil {
+			return "", err
+		}
+
+		if longURL == "" {
+			break
+		}
+		attempts++
+	}
+
+	return shortURL, nil
 }

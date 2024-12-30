@@ -11,11 +11,12 @@ import (
 
 var JWT_SECRET = []byte(os.Getenv("JWT_SECRET"))
 
-func GenerateJWT(user *models.User) (string, int64, error) {
+func GenerateJWT(user *models.UserOut) (string, int64, error) {
 	claims := jwt.MapClaims{
-		"id":    user.ID,
-		"email": user.Email,
-		"exp":   time.Now().Add(time.Hour * 24 * 7).Unix(),
+		"id":         user.ID,
+		"email":      user.Email,
+		"created_at": user.CreatedAt.Unix(),
+		"exp":        time.Now().Add(time.Hour * 24 * 7).Unix(),
 	}
 
 	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString(JWT_SECRET)

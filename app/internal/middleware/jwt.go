@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/AmazingAkai/URL-Shortener/app/internal/models"
 	"github.com/AmazingAkai/URL-Shortener/app/internal/utils"
@@ -37,11 +38,10 @@ func JwtMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-    // TODO: check wheter the user exists in the database
-
-		user := &models.User{
-			ID:    int(claims["id"].(float64)),
-			Email: claims["email"].(string),
+		user := &models.UserOut{
+			ID:        int(claims["id"].(float64)),
+			Email:     claims["email"].(string),
+			CreatedAt: time.Unix(claims["created_at"].(int64), 0),
 		}
 
 		ctx := context.WithValue(r.Context(), constants.USER_KEY, user)
