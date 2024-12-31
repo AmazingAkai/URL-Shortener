@@ -21,11 +21,11 @@ func CreateUser(userInput models.User) (*models.UserOut, error) {
 	query := `
 		INSERT INTO users (email, password)
 		VALUES ($1, $2)
-		RETURNING id, email, created_at`
+		RETURNING id, email`
 
 	err = database.New().
 		QueryRow(query, userInput.Email, hash).
-		Scan(&user.ID, &user.Email, &user.CreatedAt)
+		Scan(&user.ID, &user.Email)
 
 	if err != nil {
 		return nil, err
@@ -41,8 +41,8 @@ func AuthenticateUser(userIn models.User) (*models.UserOut, error) {
 	)
 
 	err := database.New().
-		QueryRow("SELECT id, email, password, created_at FROM users WHERE email = $1", userIn.Email).
-		Scan(&user.ID, &user.Email, &hashedPassword, &user.CreatedAt)
+		QueryRow("SELECT id, email, password FROM users WHERE email = $1", userIn.Email).
+		Scan(&user.ID, &user.Email, &hashedPassword)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -56,5 +56,5 @@ func AuthenticateUser(userIn models.User) (*models.UserOut, error) {
 		return nil, errors.New("incorrect password")
 	}
 
-	return nil, nil
+	return user, nil
 }

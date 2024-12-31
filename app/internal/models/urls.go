@@ -4,7 +4,7 @@ import "time"
 
 type URL struct {
 	LongURL   string     `json:"long_url" validate:"required,url"`
-	ExpiresAt *time.Time `json:"expires_at" validate:"futureDate"`
+	ExpiresAt *time.Time `json:"expires_at" validate:"omitempty,futureDate"`
 }
 
 type URLOut struct {
@@ -12,6 +12,5 @@ type URLOut struct {
 	UserID    *int       `json:"user_id,omitempty"`
 	ShortURL  string     `json:"short_url"`
 	LongURL   string     `json:"long_url"`
-	CreatedAt time.Time  `json:"created_at"`
 	ExpiresAt *time.Time `json:"expires_at,omitempty"`
 }

@@ -12,6 +12,7 @@ var validate *validator.Validate
 
 func init() {
 	validate = validator.New()
+	validate.RegisterValidation("futureDate", futureDate)
 	validate.RegisterTagNameFunc(func(fid reflect.StructField) string {
 		name := strings.SplitN(fid.Tag.Get("json"), ",", 2)[0]
 		if name == "-" {
@@ -19,7 +20,6 @@ func init() {
 		}
 		return name
 	})
-	validate.RegisterValidation("futureDate", futureDate)
 }
 
 func ValidateStruct(input interface{}) error {
@@ -27,15 +27,14 @@ func ValidateStruct(input interface{}) error {
 }
 
 func futureDate(fl validator.FieldLevel) bool {
-	fieldValue := fl.Field().Interface()
-	if fieldValue == nil {
-		return true
+	if timeVal, ok := fl.Field().Interface().(time.Time); ok {
+		currentTime := time.Now()
+		twentyEightDaysFromNow := currentTime.Add(28 * 24 * time.Hour)
+
+		if timeVal.After(currentTime) && timeVal.Before(twentyEightDaysFromNow) {
+			return true
+		}
 	}
 
-	t, ok := fieldValue.(*time.Time)
-	if !ok {
-		return false
-	}
-
-	return t.After(time.Now())
+	return false
 }

@@ -4,9 +4,11 @@ import (
 	"net/http"
 
 	"github.com/AmazingAkai/URL-Shortener/app/internal/database/queries"
+	"github.com/AmazingAkai/URL-Shortener/app/internal/log"
 	"github.com/AmazingAkai/URL-Shortener/app/internal/models"
 	"github.com/AmazingAkai/URL-Shortener/app/internal/utils"
 	"github.com/AmazingAkai/URL-Shortener/app/internal/utils/constants"
+
 	"github.com/gorilla/mux"
 )
 
@@ -30,11 +32,12 @@ func createShortURLHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := utils.ValidateStruct(urlInput); err != nil {
+		log.Errorf("Validation error: %v", err)
 		utils.ValidationError(w, err)
 		return
 	}
 
-	user := r.Context().Value(constants.USER_KEY).(*models.UserOut)
+	user := r.Context().Value(constants.USER_KEY)
 	url, err := queries.CreateShortURL(urlInput, user)
 
 	if err != nil {
