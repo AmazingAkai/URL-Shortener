@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS url_requests (
     id BIGSERIAL PRIMARY KEY,
     url_id BIGINT NOT NULL,
     ip_address VARCHAR(45) NOT NULL,
-    referrer VARCHAR(2048) NOT NULL,
+    referer VARCHAR(2048) NOT NULL,
     user_agent VARCHAR(2048) NOT NULL,
     FOREIGN KEY (url_id) REFERENCES urls (id) ON DELETE CASCADE ON UPDATE CASCADE
 );

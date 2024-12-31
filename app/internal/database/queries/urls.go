@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/AmazingAkai/URL-Shortener/app/internal/database"
+	"github.com/AmazingAkai/URL-Shortener/app/internal/log"
 	"github.com/AmazingAkai/URL-Shortener/app/internal/models"
 	"github.com/AmazingAkai/URL-Shortener/app/internal/utils"
 )
@@ -40,24 +41,32 @@ func CreateShortURL(urlInput models.URL, user any) (*models.URLOut, error) {
 	return url, nil
 }
 
-func GetLongURL(shortURL string) (string, error) {
+func GetLongURL(shortURL string) (int, string, error) {
 	var (
+		id        int
 		longURL   string
 		expiresAt *time.Time
 	)
-	query := "SELECT original_url, expires_at FROM urls WHERE short_url = $1 LIMIT 1"
-	err := database.New().QueryRow(query, shortURL).Scan(&longURL, &expiresAt)
+	query := "SELECT id, original_url, expires_at FROM urls WHERE short_url = $1 LIMIT 1"
+	err := database.New().QueryRow(query, shortURL).Scan(&id, &longURL, &expiresAt)
 	if err == sql.ErrNoRows {
-		return "", nil
+		return 0, "", nil
 	}
 
 	if expiresAt != nil && time.Now().After(*expiresAt) {
-		return "", nil
+		return 0, "", nil
 	}
 
-	return longURL, err
+	return id, longURL, err
 }
 
+func CreateVisit(urlID int, ipAddr, referer, userAgent string) {
+	query := "INSERT INTO url_requests (url_id, ip_address, referer, user_agent) VALUES ($1, $2, $3, $4)"
+	_, err := database.New().Exec(query, urlID, ipAddr, referer, userAgent)
+	if err != nil {
+		log.Error(err.Error())
+	}
+}
 func generateUniqueShortURL() (string, error) {
 	var (
 		shortURL string
@@ -70,7 +79,7 @@ func generateUniqueShortURL() (string, error) {
 		}
 
 		shortURL = utils.GenerateShortURL()
-		longURL, err := GetLongURL(shortURL)
+		_, longURL, err := GetLongURL(shortURL)
 		if err != nil {
 			return "", err
 		}

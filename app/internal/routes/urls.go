@@ -15,11 +15,17 @@ import (
 func redirectShortURLHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	longURL, err := queries.GetLongURL(vars["short_url"])
+	id, longURL, err := queries.GetLongURL(vars["short_url"])
 	if err != nil || longURL == "" {
 		utils.NotFoundError(w)
 		return
 	}
+
+	ipAddr := r.Header.Get("X-Forwarded-For")
+	if ipAddr == "" {
+		ipAddr = r.RemoteAddr
+	}
+	go queries.CreateVisit(id, ipAddr, r.Header.Get("Referer"), r.Header.Get("User-Agent"))
 
 	http.Redirect(w, r, longURL, http.StatusFound)
 }
