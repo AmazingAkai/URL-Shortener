@@ -5,10 +5,10 @@ import (
 	"errors"
 	"fmt"
 
-	"golang.org/x/crypto/bcrypt"
-
 	"github.com/AmazingAkai/URL-Shortener/app/internal/database"
 	"github.com/AmazingAkai/URL-Shortener/app/internal/models"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 func CreateUser(userInput models.User) (*models.UserOut, error) {

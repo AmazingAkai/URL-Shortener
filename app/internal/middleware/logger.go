@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/AmazingAkai/URL-Shortener/app/internal/log"
+
 	"github.com/fatih/color"
 )
 

@@ -2,10 +2,10 @@ package database
 
 import (
 	"database/sql"
-
 	"os"
 
 	"github.com/AmazingAkai/URL-Shortener/app/internal/log"
+
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 

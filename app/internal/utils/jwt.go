@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/AmazingAkai/URL-Shortener/app/internal/models"
+
 	"github.com/golang-jwt/jwt/v4"
 )
 

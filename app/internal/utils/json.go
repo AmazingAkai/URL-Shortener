@@ -4,9 +4,9 @@ import (
 	"io"
 	"net/http"
 
-	jsoniter "github.com/json-iterator/go"
-
 	"github.com/AmazingAkai/URL-Shortener/app/internal/log"
+
+	jsoniter "github.com/json-iterator/go"
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary

@@ -5,12 +5,12 @@ import (
 	"log"
 	"math"
 
+	"github.com/AmazingAkai/URL-Shortener/app/internal/database"
+	_ "github.com/AmazingAkai/URL-Shortener/app/internal/env"
+
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-
-	"github.com/AmazingAkai/URL-Shortener/app/internal/database"
-	_ "github.com/AmazingAkai/URL-Shortener/app/internal/env"
 )
 
 func main() {
