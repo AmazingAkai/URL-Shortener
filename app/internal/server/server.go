@@ -15,7 +15,7 @@ import (
 	"github.com/AmazingAkai/URL-Shortener/app/internal/routes"
 
 	"github.com/go-chi/chi/v5"
-	cmiddleware "github.com/go-chi/chi/v5/middleware"
+	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 )
 
 type Server struct {
@@ -26,10 +26,11 @@ type Server struct {
 func New() *Server {
 	r := chi.NewRouter()
 
-	r.Use(cmiddleware.RequestID)
-	r.Use(cmiddleware.RealIP)
+	r.Use(chiMiddleware.RequestID)
+	r.Use(chiMiddleware.RealIP)
+	r.Use(chiMiddleware.StripSlashes)
 	r.Use(middleware.Logger)
-	r.Use(cmiddleware.Recoverer)
+	r.Use(chiMiddleware.Recoverer)
 	r.Use(middleware.CORS)
 	r.Use(middleware.JWT)
 	r.Use(middleware.GZip)
