@@ -10,7 +10,7 @@ const (
 	ALLOW_HEADERS = "Accept, Authorization"
 )
 
-func CORSMiddleware(next http.Handler) http.Handler {
+func CORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", ALLOW_ORIGIN)
 		w.Header().Set("Access-Control-Allow-Methods", ALLOW_METHODS)

@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-
+	"log"
 	"math"
 
 	"github.com/golang-migrate/migrate/v4"
@@ -11,7 +11,6 @@ import (
 
 	"github.com/AmazingAkai/URL-Shortener/app/internal/database"
 	_ "github.com/AmazingAkai/URL-Shortener/app/internal/env"
-	"github.com/AmazingAkai/URL-Shortener/app/internal/log"
 )
 
 func main() {
@@ -48,5 +47,5 @@ func main() {
 		log.Fatalf("An error occured running the migration: %v", err)
 	}
 
-	log.Infof("Ran %d migration(s) %s", int(math.Abs(float64(steps))), direction)
+	log.Printf("Ran %d migration(s) %s", int(math.Abs(float64(steps))), direction)
 }

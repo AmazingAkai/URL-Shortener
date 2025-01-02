@@ -7,7 +7,8 @@ import (
 	"github.com/AmazingAkai/URL-Shortener/app/internal/database/queries"
 	"github.com/AmazingAkai/URL-Shortener/app/internal/models"
 	"github.com/AmazingAkai/URL-Shortener/app/internal/utils"
-	"github.com/gorilla/mux"
+
+	"github.com/go-chi/chi/v5"
 )
 
 func createUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -65,7 +66,7 @@ func logInHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func RegisterUserRoutes(router *mux.Router) {
-	router.HandleFunc("/register", createUserHandler).Methods("POST")
-	router.HandleFunc("/login", logInHandler).Methods("POST")
+func RegisterUserRoutes(r *chi.Mux) {
+	r.Post("/register", createUserHandler)
+	r.Post("/login", logInHandler)
 }

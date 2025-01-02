@@ -7,7 +7,6 @@ import (
 
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/AmazingAkai/URL-Shortener/app/internal/database"
@@ -15,7 +14,8 @@ import (
 	"github.com/AmazingAkai/URL-Shortener/app/internal/middleware"
 	"github.com/AmazingAkai/URL-Shortener/app/internal/routes"
 
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi/v5"
+	cmiddleware "github.com/go-chi/chi/v5/middleware"
 )
 
 type Server struct {
@@ -24,19 +24,22 @@ type Server struct {
 }
 
 func New() *Server {
-	router := mux.NewRouter()
+	r := chi.NewRouter()
 
-	router.Use(middleware.CORSMiddleware)
-	router.Use(middleware.LoggerMiddleware)
-	router.Use(middleware.JwtMiddleware)
-	router.Use(middleware.GzipMiddleware)
+	r.Use(cmiddleware.RequestID)
+	r.Use(cmiddleware.RealIP)
+	r.Use(middleware.Logger)
+	r.Use(cmiddleware.Recoverer)
+	r.Use(middleware.CORS)
+	r.Use(middleware.JWT)
+	r.Use(middleware.GZip)
 
-	routes.RegisterURLRoutes(router)
-	routes.RegisterUserRoutes(router)
+	routes.RegisterURLRoutes(r)
+	routes.RegisterUserRoutes(r)
 
 	server := &Server{
 		server: &http.Server{
-			Handler:      router,
+			Handler:      r,
 			IdleTimeout:  time.Minute,
 			ReadTimeout:  10 * time.Second,
 			WriteTimeout: 30 * time.Second,
@@ -48,10 +51,8 @@ func New() *Server {
 }
 
 func (s *Server) Run() error {
-	port, _ := strconv.Atoi(os.Getenv("PORT"))
-	s.server.Addr = fmt.Sprintf(":%d", port)
-
-	log.Infof("Server starting on port %d", port)
+	s.server.Addr = os.Getenv("ADDR")
+	log.Infof("Server started at http://%s", s.server.Addr)
 	return s.server.ListenAndServe()
 }
 

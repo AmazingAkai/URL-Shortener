@@ -9,13 +9,11 @@ import (
 	"github.com/AmazingAkai/URL-Shortener/app/internal/utils"
 	"github.com/AmazingAkai/URL-Shortener/app/internal/utils/constants"
 
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi/v5"
 )
 
 func redirectShortURLHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-
-	id, longURL, err := queries.GetLongURL(vars["short_url"])
+	id, longURL, err := queries.GetLongURL(chi.URLParam(r, "short_url"))
 	if err != nil || longURL == "" {
 		utils.NotFoundError(w)
 		return
@@ -54,7 +52,7 @@ func createShortURLHandler(w http.ResponseWriter, r *http.Request) {
 	utils.WriteJSON(w, http.StatusCreated, url)
 }
 
-func RegisterURLRoutes(router *mux.Router) {
-	router.HandleFunc("/{short_url}", redirectShortURLHandler).Methods("GET")
-	router.HandleFunc("/urls", createShortURLHandler).Methods("POST")
+func RegisterURLRoutes(r *chi.Mux) {
+	r.Get("/{short_url}", redirectShortURLHandler)
+	r.Post("/urls", createShortURLHandler)
 }
