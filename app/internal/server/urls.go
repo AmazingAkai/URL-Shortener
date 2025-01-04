@@ -1,4 +1,4 @@
-package routes
+package server
 
 import (
 	"net/http"
@@ -52,7 +52,7 @@ func createShortURLHandler(w http.ResponseWriter, r *http.Request) {
 	utils.WriteJSON(w, http.StatusCreated, url)
 }
 
-func RegisterURLRoutes(r *chi.Mux) {
+func (s *Server) RegisterURLRoutes(r *chi.Mux) {
 	r.Get("/{short_url}", redirectShortURLHandler)
 	r.Post("/urls", createShortURLHandler)
 }

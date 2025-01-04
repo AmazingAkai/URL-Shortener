@@ -1,4 +1,4 @@
-package routes
+package server
 
 import (
 	"net/http"
@@ -66,7 +66,7 @@ func logInHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func RegisterUserRoutes(r *chi.Mux) {
+func (*Server) RegisterUserRoutes(r *chi.Mux) {
 	r.Post("/register", createUserHandler)
 	r.Post("/login", logInHandler)
 }

@@ -9,8 +9,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type ColourFormatter struct{}
-
 var (
 	LEVEL_COLOURS = map[logrus.Level]*color.Color{
 		logrus.DebugLevel: color.New(color.FgBlack, color.Bold),
@@ -22,6 +20,8 @@ var (
 	}
 	log *logrus.Logger
 )
+
+type ColourFormatter struct{}
 
 func (f *ColourFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	time := entry.Time.Format("2006-01-02 15:04:05")

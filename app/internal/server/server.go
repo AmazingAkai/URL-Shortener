@@ -12,19 +12,19 @@ import (
 	"github.com/AmazingAkai/URL-Shortener/app/internal/database"
 	"github.com/AmazingAkai/URL-Shortener/app/internal/log"
 	"github.com/AmazingAkai/URL-Shortener/app/internal/middleware"
-	"github.com/AmazingAkai/URL-Shortener/app/internal/routes"
 
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 )
 
 type Server struct {
-	server *http.Server
-	db     *sql.DB
+	*http.Server
+	db *sql.DB
 }
 
 func New() *Server {
 	r := chi.NewRouter()
+	db := database.New()
 
 	r.Use(chiMiddleware.RequestID)
 	r.Use(chiMiddleware.RealIP)
@@ -35,30 +35,30 @@ func New() *Server {
 	r.Use(middleware.JWT)
 	r.Use(middleware.GZip)
 
-	routes.RegisterURLRoutes(r)
-	routes.RegisterUserRoutes(r)
-
 	server := &Server{
-		server: &http.Server{
+		Server: &http.Server{
 			Handler:      r,
 			IdleTimeout:  time.Minute,
 			ReadTimeout:  10 * time.Second,
 			WriteTimeout: 30 * time.Second,
 		},
-		db: database.New(),
+		db: db,
 	}
+
+	server.RegisterURLRoutes(r)
+	server.RegisterUserRoutes(r)
 
 	return server
 }
 
 func (s *Server) Run() error {
-	s.server.Addr = os.Getenv("ADDR")
-	log.Infof("Server started at http://%s", s.server.Addr)
-	return s.server.ListenAndServe()
+	s.Addr = os.Getenv("ADDR")
+	log.Infof("Server started at http://%s", s.Addr)
+	return s.ListenAndServe()
 }
 
 func (s *Server) Shutdown(ctx context.Context) error {
-	if err := s.server.Shutdown(ctx); err != nil {
+	if err := s.Server.Shutdown(ctx); err != nil {
 		return fmt.Errorf("error shutting down server: %v", err)
 	}
 

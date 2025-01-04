@@ -16,3 +16,4 @@
 # Go workspace file
 app/go.work
 app/.env.local
+app/internal/templates/*.go
