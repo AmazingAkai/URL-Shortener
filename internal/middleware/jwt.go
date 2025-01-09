@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/AmazingAkai/URL-Shortener/app/internal/models"
-	"github.com/AmazingAkai/URL-Shortener/app/internal/utils"
-	"github.com/AmazingAkai/URL-Shortener/app/internal/utils/constants"
+	"github.com/AmazingAkai/URL-Shortener/internal/models"
+	"github.com/AmazingAkai/URL-Shortener/internal/utils"
+	"github.com/AmazingAkai/URL-Shortener/internal/utils/constants"
 
 	"github.com/golang-jwt/jwt/v4"
 )

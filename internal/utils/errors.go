@@ -2,9 +2,8 @@ package utils
 
 import (
 	"fmt"
+	"log"
 	"net/http"
-
-	"github.com/AmazingAkai/URL-Shortener/app/internal/log"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -36,7 +35,7 @@ func NotFoundError(w http.ResponseWriter) {
 }
 
 func ServerError(w http.ResponseWriter, err error) {
-	log.Errorf("Internal server error: %v", err)
+	log.Printf("Internal server error: %v", err)
 	ErrorResponse(w, http.StatusInternalServerError, "internal error")
 }
 

@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/AmazingAkai/URL-Shortener/app/internal/database/queries"
-	"github.com/AmazingAkai/URL-Shortener/app/internal/models"
-	"github.com/AmazingAkai/URL-Shortener/app/internal/utils"
+	"github.com/AmazingAkai/URL-Shortener/internal/database/queries"
+	"github.com/AmazingAkai/URL-Shortener/internal/models"
+	"github.com/AmazingAkai/URL-Shortener/internal/utils"
 
 	"github.com/go-chi/chi/v5"
 )

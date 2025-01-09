@@ -5,13 +5,13 @@ import (
 	"database/sql"
 	"fmt"
 
+	"log"
 	"net/http"
 	"os"
 	"time"
 
-	"github.com/AmazingAkai/URL-Shortener/app/internal/database"
-	"github.com/AmazingAkai/URL-Shortener/app/internal/log"
-	"github.com/AmazingAkai/URL-Shortener/app/internal/middleware"
+	"github.com/AmazingAkai/URL-Shortener/internal/database"
+	"github.com/AmazingAkai/URL-Shortener/internal/middleware"
 
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
@@ -29,8 +29,9 @@ func New() *Server {
 	r.Use(chiMiddleware.RequestID)
 	r.Use(chiMiddleware.RealIP)
 	r.Use(chiMiddleware.StripSlashes)
-	r.Use(middleware.Logger)
+	r.Use(chiMiddleware.Logger)
 	r.Use(chiMiddleware.Recoverer)
+
 	r.Use(middleware.CORS)
 	r.Use(middleware.JWT)
 	r.Use(middleware.GZip)
@@ -53,7 +54,7 @@ func New() *Server {
 
 func (s *Server) Run() error {
 	s.Addr = os.Getenv("ADDR")
-	log.Infof("Server started at http://%s", s.Addr)
+	log.Printf("Server started at http://%s", s.Addr)
 	return s.ListenAndServe()
 }
 

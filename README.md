@@ -8,12 +8,13 @@ CREATE DATABASE url_shortener OWNER url_shortener;
 CREATE EXTENSION pg_trgm;
 ```
 
-## Getting Started
+### Running Migrations
 
-Enter the app directory
 ```bash
-cd app
+make migrate STEPS=1 # number of steps
 ```
+
+## Getting Started
 
 Build the application
 ```bash

@@ -2,16 +2,16 @@ package main
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"os"
-
 	"os/signal"
 	"syscall"
 	"time"
 
-	_ "github.com/AmazingAkai/URL-Shortener/app/internal/env"
-	"github.com/AmazingAkai/URL-Shortener/app/internal/log"
-	"github.com/AmazingAkai/URL-Shortener/app/internal/server"
+	"github.com/AmazingAkai/URL-Shortener/internal/server"
+
+	_ "github.com/joho/godotenv/autoload"
 )
 
 func main() {
@@ -32,8 +32,8 @@ func main() {
 	defer cancel()
 
 	if err := s.Shutdown(ctx); err != nil {
-		log.Infof("Server forced to shutdown with error: %v", err)
+		log.Printf("Server forced to shutdown with error: %v", err)
 	}
 
-	log.Info("Server stopped")
+	log.Printf("Server stopped")
 }

@@ -1,4 +1,4 @@
-module github.com/AmazingAkai/URL-Shortener/app
+module github.com/AmazingAkai/URL-Shortener
 
 go 1.23.4
 

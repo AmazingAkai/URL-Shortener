@@ -3,12 +3,12 @@ package queries
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"time"
 
-	"github.com/AmazingAkai/URL-Shortener/app/internal/database"
-	"github.com/AmazingAkai/URL-Shortener/app/internal/log"
-	"github.com/AmazingAkai/URL-Shortener/app/internal/models"
-	"github.com/AmazingAkai/URL-Shortener/app/internal/utils"
+	"github.com/AmazingAkai/URL-Shortener/internal/database"
+	"github.com/AmazingAkai/URL-Shortener/internal/models"
+	"github.com/AmazingAkai/URL-Shortener/internal/utils"
 )
 
 func CreateShortURL(urlInput models.URL, user any) (*models.URLOut, error) {
@@ -64,7 +64,7 @@ func CreateVisit(urlID int, ipAddr, referer, userAgent string) {
 	query := "INSERT INTO url_requests (url_id, ip_address, referer, user_agent) VALUES ($1, $2, $3, $4)"
 	_, err := database.New().Exec(query, urlID, ipAddr, referer, userAgent)
 	if err != nil {
-		log.Error(err.Error())
+		log.Printf("Failed to create visit for URL with ID %d: %v", urlID, err)
 	}
 }
 func generateUniqueShortURL() (string, error) {

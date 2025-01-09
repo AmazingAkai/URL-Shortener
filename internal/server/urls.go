@@ -1,13 +1,13 @@
 package server
 
 import (
+	"log"
 	"net/http"
 
-	"github.com/AmazingAkai/URL-Shortener/app/internal/database/queries"
-	"github.com/AmazingAkai/URL-Shortener/app/internal/log"
-	"github.com/AmazingAkai/URL-Shortener/app/internal/models"
-	"github.com/AmazingAkai/URL-Shortener/app/internal/utils"
-	"github.com/AmazingAkai/URL-Shortener/app/internal/utils/constants"
+	"github.com/AmazingAkai/URL-Shortener/internal/database/queries"
+	"github.com/AmazingAkai/URL-Shortener/internal/models"
+	"github.com/AmazingAkai/URL-Shortener/internal/utils"
+	"github.com/AmazingAkai/URL-Shortener/internal/utils/constants"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -36,7 +36,7 @@ func createShortURLHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := utils.ValidateStruct(urlInput); err != nil {
-		log.Errorf("Validation error: %v", err)
+		log.Printf("Validation error: %v", err)
 		utils.ValidationError(w, err)
 		return
 	}

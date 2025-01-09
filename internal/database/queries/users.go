@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/AmazingAkai/URL-Shortener/app/internal/database"
-	"github.com/AmazingAkai/URL-Shortener/app/internal/models"
+	"github.com/AmazingAkai/URL-Shortener/internal/database"
+	"github.com/AmazingAkai/URL-Shortener/internal/models"
 
 	"golang.org/x/crypto/bcrypt"
 )

@@ -2,9 +2,8 @@ package utils
 
 import (
 	"io"
+	"log"
 	"net/http"
-
-	"github.com/AmazingAkai/URL-Shortener/app/internal/log"
 
 	jsoniter "github.com/json-iterator/go"
 )
@@ -26,7 +25,7 @@ func WriteJSON(w http.ResponseWriter, code int, data interface{}) {
 	_, err = w.Write(jsonBytes)
 
 	if err != nil {
-		log.Errorf("Error writing response: %v", err)
+		log.Printf("Error writing response: %v", err)
 	}
 }
 
