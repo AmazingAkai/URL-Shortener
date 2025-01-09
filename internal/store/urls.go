@@ -3,8 +3,9 @@ package store
 import (
 	"context"
 	"database/sql"
-	"fmt"
+	"errors"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/AmazingAkai/URL-Shortener/internal/utils"
@@ -39,23 +40,22 @@ func (s *UrlStore) Create(ctx context.Context, url *Url) error {
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
 
-	shortUrl, err := s.generateUniqueShortUrl(ctx)
-	if err != nil {
+	if err := s.generateUniqueShortUrl(ctx, url); err != nil {
 		return err
 	}
 
-	err = s.db.QueryRowContext(
+	err := s.db.QueryRowContext(
 		ctx,
 		query,
 		url.UserID,
 		url.LongUrl,
-		shortUrl,
+		url.ShortUrl,
 		url.ExpiresAt,
 	).Scan(&url.ID)
 
 	if err != nil {
-		switch err.Error() {
-		case `pq: duplicate key value violates unique constraint "urls_short_url"`:
+		switch {
+		case strings.Contains(err.Error(), "duplicate key value"):
 			return ErrConflict
 		default:
 			return err
@@ -116,29 +116,21 @@ func (s *UrlStore) CreateVisit(ctx context.Context, visit UrlVisit) {
 	}
 }
 
-func (s *UrlStore) generateUniqueShortUrl(ctx context.Context) (string, error) {
-	var (
-		shortUrl string
-		attempts = 0
-	)
+func (s *UrlStore) generateUniqueShortUrl(ctx context.Context, url *Url) error {
+	for attempts := 0; attempts < 10; attempts++ {
+		url.ShortUrl = utils.GenerateShortUrl()
 
-	for {
-		if attempts >= 10 {
-			return "", fmt.Errorf("failed to generate unique short Url after %d attempts", attempts)
-		}
-
-		shortUrl = utils.GenerateShortUrl()
-		_, err := s.GetLongUrl(ctx, shortUrl)
+		_, err := s.GetLongUrl(ctx, url.ShortUrl)
 		if err != nil {
-			if err == ErrNotFound {
-				break
-			} else {
-				return "", err
+			switch err {
+			case ErrNotFound:
+				return nil
+			default:
+				return err
 			}
 		}
 
-		attempts++
 	}
 
-	return shortUrl, nil
+	return errors.New("failed to generate unique short url")
 }

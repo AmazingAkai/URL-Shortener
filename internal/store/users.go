@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"database/sql"
+	"strings"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -56,8 +57,8 @@ func (s *UserStore) Create(ctx context.Context, user *User) error {
 	).Scan(&user.ID)
 
 	if err != nil {
-		switch err.Error() {
-		case `pq: duplicate key value violates unique constraint "users_email_key"`:
+		switch {
+		case strings.Contains(err.Error(), "duplicate key value"):
 			return ErrConflict
 		default:
 			return err
