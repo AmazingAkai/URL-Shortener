@@ -40,7 +40,7 @@ func (s *Server) redirectShortUrlHandler(w http.ResponseWriter, r *http.Request)
 		Referer:   r.Header.Get("Referer"),
 		UserAgent: r.Header.Get("User-Agent"),
 	}
-	go s.store.Urls.CreateVisit(r.Context(), visit)
+	go s.store.Urls.CreateVisit(visit)
 
 	http.Redirect(w, r, url.LongUrl, http.StatusFound)
 }

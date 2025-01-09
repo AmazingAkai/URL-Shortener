@@ -95,12 +95,12 @@ func (s *UrlStore) GetLongUrl(ctx context.Context, shortUrl string) (*Url, error
 
 }
 
-func (s *UrlStore) CreateVisit(ctx context.Context, visit UrlVisit) {
+func (s *UrlStore) CreateVisit(visit UrlVisit) {
 	query := `INSERT INTO url_requests (url_id, ip_address, referer, user_agent) 
 			VALUES ($1, $2, $3, $4)
 	`
 
-	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	ctx, cancel := context.WithTimeout(context.Background(), QueryTimeoutDuration)
 	defer cancel()
 
 	_, err := s.db.ExecContext(
