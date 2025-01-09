@@ -13,7 +13,7 @@ const (
 
 var randomGenerator = rand.New(rand.NewSource(time.Now().UnixNano()))
 
-func GenerateShortURL() string {
+func GenerateShortUrl() string {
 	var builder strings.Builder
 	builder.Grow(SHORT_URL_LENGTH)
 

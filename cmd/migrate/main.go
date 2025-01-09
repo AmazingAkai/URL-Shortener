@@ -5,7 +5,7 @@ import (
 	"log"
 	"math"
 
-	"github.com/AmazingAkai/URL-Shortener/internal/database"
+	"github.com/AmazingAkai/URL-Shortener/internal/db"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
@@ -14,8 +14,8 @@ import (
 )
 
 func main() {
-	db := database.New()
-	defer database.Close()
+	db := db.New()
+	defer db.Close()
 
 	steps := 1
 	direction := "down"

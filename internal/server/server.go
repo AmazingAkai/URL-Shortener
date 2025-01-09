@@ -10,8 +10,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/AmazingAkai/URL-Shortener/internal/database"
+	"github.com/AmazingAkai/URL-Shortener/internal/db"
 	"github.com/AmazingAkai/URL-Shortener/internal/middleware"
+	"github.com/AmazingAkai/URL-Shortener/internal/store"
 
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
@@ -19,12 +20,12 @@ import (
 
 type Server struct {
 	*http.Server
-	db *sql.DB
+	db    *sql.DB
+	store store.Storage
 }
 
 func New() *Server {
 	r := chi.NewRouter()
-	db := database.New()
 
 	r.Use(chiMiddleware.RequestID)
 	r.Use(chiMiddleware.RealIP)
@@ -36,6 +37,9 @@ func New() *Server {
 	r.Use(middleware.JWT)
 	r.Use(middleware.GZip)
 
+	db := db.New()
+	storage := store.NewStorage(db)
+
 	server := &Server{
 		Server: &http.Server{
 			Handler:      r,
@@ -43,11 +47,14 @@ func New() *Server {
 			ReadTimeout:  10 * time.Second,
 			WriteTimeout: 30 * time.Second,
 		},
-		db: db,
+		db:    db,
+		store: storage,
 	}
 
-	server.RegisterURLRoutes(r)
-	server.RegisterUserRoutes(r)
+	r.Get("/{short_url}", server.redirectShortUrlHandler)
+	r.Post("/urls", server.createShortUrlHandler)
+	r.Post("/register", server.createUserHandler)
+	r.Post("/login", server.logInHandler)
 
 	return server
 }

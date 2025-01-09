@@ -2,59 +2,74 @@ package server
 
 import (
 	"net/http"
-	"strings"
 
-	"github.com/AmazingAkai/URL-Shortener/internal/database/queries"
-	"github.com/AmazingAkai/URL-Shortener/internal/models"
+	"github.com/AmazingAkai/URL-Shortener/internal/middleware"
+	"github.com/AmazingAkai/URL-Shortener/internal/store"
 	"github.com/AmazingAkai/URL-Shortener/internal/utils"
-
-	"github.com/go-chi/chi/v5"
 )
 
-func createUserHandler(w http.ResponseWriter, r *http.Request) {
-	var userInput models.User
+type UserPayload struct {
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,min=8,max=32"`
+}
 
-	if err := utils.ReadJSON(r.Body, &userInput); err != nil {
+func (s *Server) createUserHandler(w http.ResponseWriter, r *http.Request) {
+	var payload UserPayload
+
+	if err := utils.ReadJSON(r.Body, &payload); err != nil {
 		utils.BadRequestError(w)
 		return
 	}
-	if err := utils.ValidateStruct(userInput); err != nil {
+	if err := utils.ValidateStruct(payload); err != nil {
 		utils.ValidationError(w, err)
 		return
 	}
 
-	user, err := queries.CreateUser(userInput)
-	if err != nil {
-		if strings.Contains(err.Error(), "duplicate key value violates unique constraint \"users_email_key\"") {
-			utils.ErrorResponse(w, http.StatusConflict, "email already exists")
-			return
-		}
+	user := &store.User{
+		Email: payload.Email,
+	}
+	if err := user.Password.Set(payload.Password); err != nil {
 		utils.ServerError(w, err)
+		return
+	}
+
+	if err := s.store.Users.Create(r.Context(), user); err != nil {
+		switch err {
+		case store.ErrConflict:
+			utils.ErrorResponse(w, http.StatusConflict, "user already exists")
+		default:
+			utils.ServerError(w, err)
+		}
 		return
 	}
 
 	utils.WriteJSON(w, http.StatusCreated, user)
 }
 
-func logInHandler(w http.ResponseWriter, r *http.Request) {
-	var userInput models.User
-	if err := utils.ReadJSON(r.Body, &userInput); err != nil {
+func (s *Server) logInHandler(w http.ResponseWriter, r *http.Request) {
+	var payload UserPayload
+	if err := utils.ReadJSON(r.Body, &payload); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if err := utils.ValidateStruct(userInput); err != nil {
+	if err := utils.ValidateStruct(payload); err != nil {
 		utils.ValidationError(w, err)
 		return
 	}
 
-	user, err := queries.AuthenticateUser(userInput)
+	user, err := s.store.Users.GetByEmail(r.Context(), payload.Email)
 	if err != nil {
 		utils.ErrorResponse(w, http.StatusUnauthorized, err.Error())
 		return
 	}
 
-	token, exp, err := utils.GenerateJWT(user)
+	if err := user.Password.Compare(payload.Password); err != nil {
+		utils.ErrorResponse(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+
+	token, exp, err := middleware.GenerateJWT(user)
 	if err != nil {
 		utils.ServerError(w, err)
 		return
@@ -64,9 +79,4 @@ func logInHandler(w http.ResponseWriter, r *http.Request) {
 		"token": token,
 		"exp":   exp,
 	})
-}
-
-func (*Server) RegisterUserRoutes(r *chi.Mux) {
-	r.Post("/register", createUserHandler)
-	r.Post("/login", logInHandler)
 }
