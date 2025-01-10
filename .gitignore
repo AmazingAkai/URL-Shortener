@@ -16,3 +16,8 @@
 # Go workspace file
 go.work
 .env
+
+# TailwindCSS Stuff
+node_modules
+static/css/tailwind.css
+internal/views/*.go

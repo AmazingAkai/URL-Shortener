@@ -3,6 +3,7 @@ module github.com/AmazingAkai/URL-Shortener
 go 1.23.4
 
 require (
+	github.com/a-h/templ v0.3.819
 	github.com/go-chi/chi/v5 v5.2.0
 	github.com/go-playground/validator/v10 v10.23.0
 	github.com/golang-jwt/jwt/v4 v4.5.1

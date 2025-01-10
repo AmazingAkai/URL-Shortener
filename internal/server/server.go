@@ -13,6 +13,7 @@ import (
 	"github.com/AmazingAkai/URL-Shortener/internal/db"
 	"github.com/AmazingAkai/URL-Shortener/internal/middleware"
 	"github.com/AmazingAkai/URL-Shortener/internal/store"
+	"github.com/AmazingAkai/URL-Shortener/internal/views"
 
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
@@ -51,10 +52,16 @@ func New() *Server {
 		store: storage,
 	}
 
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		views.Home().Render(r.Context(), w)
+	})
+
 	r.Get("/{short_url}", server.redirectShortUrlHandler)
 	r.Post("/urls", server.createShortUrlHandler)
 	r.Post("/register", server.createUserHandler)
 	r.Post("/login", server.logInHandler)
+
+	r.Mount("/static", http.StripPrefix("/static", http.FileServer(http.Dir("static"))))
 
 	return server
 }
