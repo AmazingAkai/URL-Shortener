@@ -12,42 +12,13 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type UrlCreatePayload struct {
+type urlCreatePayload struct {
 	LongUrl   string     `json:"long_url" validate:"required,url"`
 	ExpiresAt *time.Time `json:"expires_at" validate:"omitempty,futureDate"`
 }
 
-func (s *Server) redirectShortUrlHandler(w http.ResponseWriter, r *http.Request) {
-	url, err := s.store.Urls.GetLongUrl(r.Context(), chi.URLParam(r, "short_url"))
-	if err != nil {
-		switch err {
-		case store.ErrNotFound:
-			utils.NotFoundError(w)
-		default:
-			utils.ServerError(w, err)
-		}
-		return
-	}
-
-	ipAddr := r.Header.Get("X-Forwarded-For")
-	if ipAddr == "" {
-		ipAddr = r.RemoteAddr
-	}
-
-	visit := store.UrlVisit{
-		UrlID:     url.ID,
-		IpAddr:    ipAddr,
-		Referer:   r.Header.Get("Referer"),
-		UserAgent: r.Header.Get("User-Agent"),
-	}
-	go s.store.Urls.CreateVisit(visit)
-
-	http.Redirect(w, r, url.LongUrl, http.StatusFound)
-}
-
 func (s *Server) createShortUrlHandler(w http.ResponseWriter, r *http.Request) {
-	var payload UrlCreatePayload
-
+	var payload urlCreatePayload
 	if err := utils.ReadJSON(r.Body, &payload); err != nil {
 		utils.BadRequestError(w)
 		return
@@ -79,4 +50,32 @@ func (s *Server) createShortUrlHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.WriteJSON(w, http.StatusCreated, url)
+}
+
+func (s *Server) redirectShortUrlHandler(w http.ResponseWriter, r *http.Request) {
+	url, err := s.store.Urls.GetLongUrl(r.Context(), chi.URLParam(r, "short_url"))
+	if err != nil {
+		switch err {
+		case store.ErrNotFound:
+			utils.NotFoundError(w)
+		default:
+			utils.ServerError(w, err)
+		}
+		return
+	}
+
+	ipAddr := r.Header.Get("X-Forwarded-For")
+	if ipAddr == "" {
+		ipAddr = r.RemoteAddr
+	}
+
+	visit := store.UrlVisit{
+		UrlID:     url.ID,
+		IpAddr:    ipAddr,
+		Referer:   r.Header.Get("Referer"),
+		UserAgent: r.Header.Get("User-Agent"),
+	}
+	go s.store.Urls.CreateVisit(visit)
+
+	http.Redirect(w, r, url.LongUrl, http.StatusFound)
 }

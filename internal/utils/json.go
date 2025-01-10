@@ -1,14 +1,11 @@
 package utils
 
 import (
+	"encoding/json"
 	"io"
 	"log"
 	"net/http"
-
-	jsoniter "github.com/json-iterator/go"
 )
-
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 type Map map[string]interface{}
 

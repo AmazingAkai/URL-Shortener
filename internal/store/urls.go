@@ -119,7 +119,6 @@ func (s *UrlStore) CreateVisit(visit UrlVisit) {
 func (s *UrlStore) generateUniqueShortUrl(ctx context.Context, url *Url) error {
 	for attempts := 0; attempts < 10; attempts++ {
 		url.ShortUrl = utils.GenerateShortUrl()
-
 		_, err := s.GetLongUrl(ctx, url.ShortUrl)
 		if err != nil {
 			switch err {
@@ -129,8 +128,6 @@ func (s *UrlStore) generateUniqueShortUrl(ctx context.Context, url *Url) error {
 				return err
 			}
 		}
-
 	}
-
 	return errors.New("failed to generate unique short url")
 }

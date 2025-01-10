@@ -8,14 +8,13 @@ import (
 	"github.com/AmazingAkai/URL-Shortener/internal/utils"
 )
 
-type UserPayload struct {
+type userCreatePayload struct {
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required,min=8,max=32"`
 }
 
 func (s *Server) createUserHandler(w http.ResponseWriter, r *http.Request) {
-	var payload UserPayload
-
+	var payload userCreatePayload
 	if err := utils.ReadJSON(r.Body, &payload); err != nil {
 		utils.BadRequestError(w)
 		return
@@ -47,7 +46,7 @@ func (s *Server) createUserHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) logInHandler(w http.ResponseWriter, r *http.Request) {
-	var payload UserPayload
+	var payload userCreatePayload
 	if err := utils.ReadJSON(r.Body, &payload); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
