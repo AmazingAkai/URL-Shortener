@@ -20,12 +20,12 @@ type UrlCreatePayload struct {
 func (s *Server) createShortUrlHandler(w http.ResponseWriter, r *http.Request) {
 	var payload UrlCreatePayload
 	if err := utils.ReadJSON(r.Body, &payload); err != nil {
-		utils.BadRequestError(w)
+		utils.ParseFormError(w, r, err)
 		return
 	}
 	if err := utils.ValidateStruct(payload); err != nil {
 		log.Printf("Validation error: %v", err)
-		utils.ValidationError(w, err)
+		utils.ValidationError(w, r, err)
 		return
 	}
 
@@ -42,14 +42,14 @@ func (s *Server) createShortUrlHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch err {
 		case store.ErrConflict:
-			utils.ErrorResponse(w, http.StatusConflict, "short url already exists")
+			utils.ErrorResponse(w, r, http.StatusConflict, []string{"Short URL already exists."})
 		default:
-			utils.ServerError(w, err)
+			utils.ServerError(w, r, err)
 		}
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusCreated, url)
+	utils.WriteJSON(w, r, http.StatusCreated, url)
 }
 
 func (s *Server) redirectShortUrlHandler(w http.ResponseWriter, r *http.Request) {
@@ -57,9 +57,10 @@ func (s *Server) redirectShortUrlHandler(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		switch err {
 		case store.ErrNotFound:
-			utils.NotFoundError(w)
+			// utils.NotFoundError(w) // TODO: Fix this
+			utils.ErrorResponse(w, r, http.StatusNotFound, []string{"Short URL not found."})
 		default:
-			utils.ServerError(w, err)
+			utils.ServerError(w, r, err)
 		}
 		return
 	}

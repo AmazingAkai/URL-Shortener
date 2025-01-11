@@ -1,0 +1,11 @@
+package partials
+
+templ Error(errors []string) {
+	<div class="rounded-lg border border-red-600 bg-red-300 p-2 m-2">
+		<ul class="list-disc pl-5 space-y-2">
+			for _, err := range errors {
+				<li class="text-red-600">{ err }</li>
+			}
+		</ul>
+	</div>
+}

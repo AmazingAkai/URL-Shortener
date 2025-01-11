@@ -3,24 +3,9 @@ package views
 import "github.com/AmazingAkai/URL-Shortener/internal/store"
 
 templ Home(session *store.Session) {
-	<!DOCTYPE html>
-	<html lang="en">
-		<head>
-			<meta charset="UTF-8"/>
-			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-			<link rel="stylesheet" href="/static/css/tailwind.css"/>
-			<title>Document</title>
-		</head>
-		<body>
-			<div class="bg-blue-900">Hello, World!</div>
-			<div>
-				Logged In? 
-				if session != nil {
-					Yes
-				} else {
-					No
-				}
-			</div>
-		</body>
-	</html>
+	@Layout(session) {
+		<div class="h-full w-full flex justify-center items-center">
+			Hello World!
+		</div>
+	}
 }

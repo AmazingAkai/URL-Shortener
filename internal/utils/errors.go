@@ -5,42 +5,38 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/AmazingAkai/URL-Shortener/internal/views/partials"
 	"github.com/go-playground/validator/v10"
 )
 
-type ErrorMap map[string][]string
+func ValidationError(w http.ResponseWriter, r *http.Request, validationError error) {
+	var resp []string
 
-func ValidationError(w http.ResponseWriter, vErr error) {
-	resp := ErrorMap{}
-
-	switch err := vErr.(type) {
+	switch err := validationError.(type) {
 	case validator.ValidationErrors:
+		resp = make([]string, 0, len(err))
 		for _, e := range err {
-			field := e.Field()
-			msg := checkTagRules(e)
-			resp[field] = append(resp[field], msg)
+			resp = append(resp, checkTagRules(e))
 		}
 	default:
-		resp["non_field_error"] = append(resp["non_field_error"], err.Error())
+		resp = []string{err.Error()}
 	}
-	ErrorResponse(w, http.StatusUnprocessableEntity, resp)
+	ErrorResponse(w, r, http.StatusBadRequest, resp)
 }
 
-func BadRequestError(w http.ResponseWriter) {
-	ErrorResponse(w, http.StatusUnprocessableEntity, "unable to process request")
+func ParseFormError(w http.ResponseWriter, r *http.Request, err error) {
+	ErrorResponse(w, r, http.StatusBadRequest, []string{err.Error()})
 }
 
-func NotFoundError(w http.ResponseWriter) {
-	ErrorResponse(w, http.StatusNotFound, "not found")
-}
-
-func ServerError(w http.ResponseWriter, err error) {
+func ServerError(w http.ResponseWriter, r *http.Request, err error) {
 	log.Printf("Internal server error: %v", err)
-	ErrorResponse(w, http.StatusInternalServerError, "internal error")
+	ErrorResponse(w, r, http.StatusInternalServerError, []string{"An internal server error occurred."})
 }
 
-func ErrorResponse(w http.ResponseWriter, code int, errs interface{}) {
-	WriteJSON(w, code, Map{"errors": errs})
+func ErrorResponse(w http.ResponseWriter, r *http.Request, code int, errs []string) {
+	fmt.Printf("errs: %v\ncode: %v\n", errs, code)
+	w.WriteHeader(code)
+	partials.Error(errs).Render(r.Context(), w)
 }
 
 func checkTagRules(e validator.FieldError) (errMsg string) {
@@ -48,15 +44,15 @@ func checkTagRules(e validator.FieldError) (errMsg string) {
 
 	switch tag {
 	case "required":
-		errMsg = "this field is required"
+		errMsg = fmt.Sprintf("%s is required.", field)
 	case "email":
-		errMsg = fmt.Sprintf("%q is not a valid email", value)
+		errMsg = fmt.Sprintf("%q is not a valid email.", value)
 	case "min":
-		errMsg = fmt.Sprintf("%s must be greater than %v", field, param)
+		errMsg = fmt.Sprintf("%s length must be greater than %v.", field, param)
 	case "max":
-		errMsg = fmt.Sprintf("%s must be less than %v", field, param)
+		errMsg = fmt.Sprintf("%s must be less than %v.", field, param)
 	default:
-		errMsg = fmt.Sprintf("%s is not valid", field)
+		errMsg = fmt.Sprintf("%s is not valid.", field)
 	}
 
 	return

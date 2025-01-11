@@ -7,7 +7,6 @@ import (
 type Session struct {
 	UserID    int
 	Token     string
-	CSRFToken string
 	ExpiresAt int64
 }
 

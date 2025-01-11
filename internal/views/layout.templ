@@ -1,0 +1,33 @@
+package views 
+
+import "github.com/AmazingAkai/URL-Shortener/internal/store"
+
+templ Layout(session *store.Session) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<meta name="htmx-config" content='{"responseHandling": [{"code":"...", "swap": true}]}'/>
+			<link rel="stylesheet" href="/static/css/tailwind.css"/>
+			<link rel="icon" href="/static/favicon.ico" type="image/x-icon"/>
+			<title>URL Shortener</title>
+			<script src="https://unpkg.com/htmx.org@2.0.4"></script>
+		</head>
+		<body class="h-screen flex flex-col">
+			<header>
+				<nav hx-boost="true" class="bg-blue-600 flex justify-between items-center p-4">
+					<h1 class="text-white text-2xl font-bold select-none">URL Shortener</h1>
+					if session == nil {
+						<a href="login" class="text-white bg-blue-500 hover:bg-blue-700 px-4 py-2 rounded">
+							Login
+						</a>
+					}
+				</nav>
+			</header>
+			<main class="flex-1 bg-blue-600 text-white">
+				{ children... }
+			</main>
+		</body>
+	</html>
+}

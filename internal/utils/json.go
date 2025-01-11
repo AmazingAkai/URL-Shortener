@@ -9,11 +9,11 @@ import (
 
 type Map map[string]interface{}
 
-func WriteJSON(w http.ResponseWriter, code int, data interface{}) {
+func WriteJSON(w http.ResponseWriter, r *http.Request, code int, data interface{}) {
 	jsonBytes, err := json.Marshal(data)
 
 	if err != nil {
-		ServerError(w, err)
+		ServerError(w, r, err)
 		return
 	}
 

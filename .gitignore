@@ -17,7 +17,7 @@ tmp
 go.work
 .env
 
-# TailwindCSS Stuff
+# Public/Views
 node_modules
 static/css/tailwind.css
-internal/views/*.go
+internal/views/**/*_templ.*
