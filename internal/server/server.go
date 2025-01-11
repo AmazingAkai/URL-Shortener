@@ -13,6 +13,7 @@ import (
 	"github.com/AmazingAkai/URL-Shortener/internal/db"
 	"github.com/AmazingAkai/URL-Shortener/internal/middleware"
 	"github.com/AmazingAkai/URL-Shortener/internal/store"
+	"github.com/AmazingAkai/URL-Shortener/internal/utils/constants"
 	"github.com/AmazingAkai/URL-Shortener/internal/views"
 
 	"github.com/go-chi/chi/v5"
@@ -22,11 +23,14 @@ import (
 type Server struct {
 	*http.Server
 	db    *sql.DB
-	store store.Storage
+	store *store.Storage
 }
 
 func New() *Server {
 	r := chi.NewRouter()
+
+	db := db.New()
+	storage := store.NewStorage(db)
 
 	r.Use(chiMiddleware.RequestID)
 	r.Use(chiMiddleware.RealIP)
@@ -35,11 +39,7 @@ func New() *Server {
 	r.Use(chiMiddleware.Recoverer)
 
 	r.Use(middleware.CORS)
-	r.Use(middleware.JWT)
-	r.Use(middleware.GZip)
-
-	db := db.New()
-	storage := store.NewStorage(db)
+	r.Use(middleware.Auth(storage))
 
 	server := &Server{
 		Server: &http.Server{
@@ -53,13 +53,21 @@ func New() *Server {
 	}
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		views.Home().Render(r.Context(), w)
+		var session *store.Session
+		ctx := r.Context()
+
+		if ctx.Value(constants.SESSION_KEY) != nil {
+			session = ctx.Value(constants.SESSION_KEY).(*store.Session)
+		}
+
+		views.Home(session).Render(ctx, w)
 	})
 
 	r.Get("/{short_url}", server.redirectShortUrlHandler)
 	r.Post("/urls", server.createShortUrlHandler)
 	r.Post("/register", server.createUserHandler)
-	r.Post("/login", server.logInHandler)
+	r.Post("/login", server.loginHandler)
+	r.Post("/logout", server.logoutHandler)
 
 	r.Mount("/static", http.StripPrefix("/static", http.FileServer(http.Dir("static"))))
 

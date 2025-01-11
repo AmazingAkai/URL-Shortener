@@ -2,19 +2,20 @@ package server
 
 import (
 	"net/http"
+	"time"
 
-	"github.com/AmazingAkai/URL-Shortener/internal/middleware"
 	"github.com/AmazingAkai/URL-Shortener/internal/store"
 	"github.com/AmazingAkai/URL-Shortener/internal/utils"
+	"github.com/AmazingAkai/URL-Shortener/internal/utils/constants"
 )
 
-type userCreatePayload struct {
+type UserCreatePayload struct {
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required,min=8,max=32"`
 }
 
 func (s *Server) createUserHandler(w http.ResponseWriter, r *http.Request) {
-	var payload userCreatePayload
+	var payload UserCreatePayload
 	if err := utils.ReadJSON(r.Body, &payload); err != nil {
 		utils.BadRequestError(w)
 		return
@@ -45,8 +46,13 @@ func (s *Server) createUserHandler(w http.ResponseWriter, r *http.Request) {
 	utils.WriteJSON(w, http.StatusCreated, user)
 }
 
-func (s *Server) logInHandler(w http.ResponseWriter, r *http.Request) {
-	var payload userCreatePayload
+func (s *Server) loginHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Context().Value(constants.SESSION_KEY) != nil {
+		utils.ErrorResponse(w, http.StatusUnauthorized, "user already logged in")
+		return
+	}
+
+	var payload UserCreatePayload
 	if err := utils.ReadJSON(r.Body, &payload); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -68,14 +74,70 @@ func (s *Server) logInHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, exp, err := middleware.GenerateJWT(user)
+	sessionToken, err := utils.GenerateSecureToken(32)
 	if err != nil {
 		utils.ServerError(w, err)
 		return
 	}
+	csrfToken, err := utils.GenerateSecureToken(32)
+	if err != nil {
+		utils.ServerError(w, err)
+		return
+	}
+	expires := time.Now().Add(time.Hour * 24)
+
+	session := &store.Session{
+		UserID:    user.ID,
+		Token:     sessionToken,
+		CSRFToken: csrfToken,
+		ExpiresAt: expires.Unix(),
+	}
+	s.store.Sessions.Set(session.Token, session)
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_token",
+		Value:    sessionToken,
+		Expires:  expires,
+		HttpOnly: true,
+	})
+	http.SetCookie(w, &http.Cookie{
+		Name:     "csrf_token",
+		Value:    csrfToken,
+		Expires:  expires,
+		HttpOnly: false,
+	})
 
 	utils.WriteJSON(w, http.StatusOK, utils.Map{
-		"token": token,
-		"exp":   exp,
+		"success": true,
+	})
+}
+
+func (s *Server) logoutHandler(w http.ResponseWriter, r *http.Request) {
+	var session *store.Session
+	ctx := r.Context()
+
+	if ctx.Value(constants.SESSION_KEY) == nil {
+		utils.ErrorResponse(w, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+
+	session = ctx.Value(constants.SESSION_KEY).(*store.Session)
+	s.store.Sessions.Delete(session.Token)
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_token",
+		Value:    "",
+		Expires:  time.Unix(0, 0),
+		HttpOnly: true,
+	})
+	http.SetCookie(w, &http.Cookie{
+		Name:     "csrf_token",
+		Value:    "",
+		Expires:  time.Unix(0, 0),
+		HttpOnly: false,
+	})
+
+	utils.WriteJSON(w, http.StatusOK, utils.Map{
+		"success": true,
 	})
 }

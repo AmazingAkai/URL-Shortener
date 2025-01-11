@@ -12,13 +12,13 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type urlCreatePayload struct {
+type UrlCreatePayload struct {
 	LongUrl   string     `json:"long_url" validate:"required,url"`
 	ExpiresAt *time.Time `json:"expires_at" validate:"omitempty,futureDate"`
 }
 
 func (s *Server) createShortUrlHandler(w http.ResponseWriter, r *http.Request) {
-	var payload urlCreatePayload
+	var payload UrlCreatePayload
 	if err := utils.ReadJSON(r.Body, &payload); err != nil {
 		utils.BadRequestError(w)
 		return
@@ -33,9 +33,9 @@ func (s *Server) createShortUrlHandler(w http.ResponseWriter, r *http.Request) {
 		LongUrl:   payload.LongUrl,
 		ExpiresAt: payload.ExpiresAt,
 	}
-	user := r.Context().Value(constants.USER_KEY)
-	if user != nil {
-		url.UserID = &user.(*store.User).ID
+	session := r.Context().Value(constants.SESSION_KEY)
+	if session != nil {
+		url.UserID = &session.(*store.Session).UserID
 	}
 
 	err := s.store.Urls.Create(r.Context(), url)

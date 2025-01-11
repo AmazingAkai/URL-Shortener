@@ -9,7 +9,7 @@ const (
 	ALLOW_METHODS     = "GET, POST, OPTIONS"
 	ALLOW_HEADERS     = "Accept, Authorization, Content-Type"
 	ALLOW_CREDENTIALS = "false"
-	MAX_AGE           = "360"
+	MAX_AGE           = "3600"
 )
 
 func CORS(next http.Handler) http.Handler {
