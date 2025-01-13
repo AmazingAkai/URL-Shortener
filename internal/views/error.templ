@@ -1,0 +1,15 @@
+package views
+
+templ ErrorPage(title, message string) {
+	<div class="h-full w-full flex flex-col justify-center items-center bg-blue-600 p-6">
+		<h1 class="text-7xl font-extrabold text-white mb-4">{ title }</h1>
+		<p class="text-xl text-blue-200 mb-8 text-center">
+			{ message }
+		</p>
+		<div class="w-full max-w-md" hx-boost="true">
+			<a href="/" class="block text-center bg-white text-blue-600 py-3 rounded-lg hover:bg-blue-200 transition duration-300">
+				Return to Home
+			</a>
+		</div>
+	</div>
+}

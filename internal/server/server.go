@@ -52,18 +52,23 @@ func New() *Server {
 
 	// Pages
 	r.Get("/", server.indexHandler)
+	r.Get("/register", server.registerPageHandler)
 	r.Get("/login", server.loginPageHandler)
 
 	// API
 	r.Get("/{short_url}", server.redirectShortUrlHandler)
 	r.Post("/urls", server.createShortUrlHandler)
+	r.Get("/urls", server.getShortUrlList)
+	r.Delete("/urls/{url_id}", server.deleteShortUrl)
 
 	r.Post("/register", server.createUserHandler)
 	r.Post("/login", server.loginHandler)
-	r.Post("/logout", server.logoutHandler)
+	r.Get("/logout", server.logoutHandler)
 
 	// Static
 	r.Mount("/static", http.StripPrefix("/static", http.FileServer(http.Dir("static"))))
+
+	r.NotFound(server.notFoundHandler)
 
 	return server
 }

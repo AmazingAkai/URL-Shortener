@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/AmazingAkai/URL-Shortener/internal/store"
-	"github.com/AmazingAkai/URL-Shortener/internal/utils"
 	"github.com/AmazingAkai/URL-Shortener/internal/utils/constants"
 )
 
@@ -20,7 +19,7 @@ func Auth(s *store.Storage) func(next http.Handler) http.Handler {
 
 			session, err := s.Sessions.Get(sessionToken.Value)
 			if err != nil {
-				utils.ErrorResponse(w, r, http.StatusUnauthorized, []string{"Invalid session token."})
+				next.ServeHTTP(w, r)
 				return
 			}
 

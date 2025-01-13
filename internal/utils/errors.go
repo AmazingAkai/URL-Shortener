@@ -34,7 +34,6 @@ func ServerError(w http.ResponseWriter, r *http.Request, err error) {
 }
 
 func ErrorResponse(w http.ResponseWriter, r *http.Request, code int, errs []string) {
-	fmt.Printf("errs: %v\ncode: %v\n", errs, code)
 	w.WriteHeader(code)
 	partials.Error(errs).Render(r.Context(), w)
 }
@@ -51,6 +50,10 @@ func checkTagRules(e validator.FieldError) (errMsg string) {
 		errMsg = fmt.Sprintf("%s length must be greater than %v.", field, param)
 	case "max":
 		errMsg = fmt.Sprintf("%s must be less than %v.", field, param)
+	case "alphanumeric":
+		errMsg = fmt.Sprintf("%s must be alphanumeric.", field)
+	case "url":
+		errMsg = fmt.Sprintf("%q is not a valid URL.", value)
 	default:
 		errMsg = fmt.Sprintf("%s is not valid.", field)
 	}

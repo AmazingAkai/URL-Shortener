@@ -16,7 +16,7 @@ type UserCreatePayload struct {
 
 func (s *Server) createUserHandler(w http.ResponseWriter, r *http.Request) {
 	var payload UserCreatePayload
-	if err := utils.ReadJSON(r.Body, &payload); err != nil {
+	if err := utils.ParseForm(r, &payload); err != nil {
 		utils.ParseFormError(w, r, err)
 		return
 	}
@@ -43,7 +43,8 @@ func (s *Server) createUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.WriteJSON(w, r, http.StatusCreated, user)
+	w.Header().Set("HX-Redirect", "/")
+	w.WriteHeader(http.StatusOK)
 }
 
 func (s *Server) loginHandler(w http.ResponseWriter, r *http.Request) {
@@ -64,7 +65,17 @@ func (s *Server) loginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user, err := s.store.Users.GetByEmail(r.Context(), payload.Email)
-	if err != nil || user.Password.Compare(payload.Password) != nil {
+	if err != nil {
+		switch err {
+		case store.ErrNotFound:
+			utils.ErrorResponse(w, r, http.StatusUnauthorized, []string{"Invalid email or password."})
+		default:
+			utils.ServerError(w, r, err)
+		}
+		return
+	}
+
+	if err := user.Password.Compare(payload.Password); err != nil {
 		utils.ErrorResponse(w, r, http.StatusUnauthorized, []string{"Invalid email or password."})
 		return
 	}
@@ -97,12 +108,11 @@ func (s *Server) loginHandler(w http.ResponseWriter, r *http.Request) {
 func (s *Server) logoutHandler(w http.ResponseWriter, r *http.Request) {
 	session := s.getSession(r)
 	if session == nil {
-		utils.ErrorResponse(w, r, http.StatusUnauthorized, []string{"User not logged in."})
+		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}
 
 	s.store.Sessions.Delete(session.Token)
-
 	http.SetCookie(w, &http.Cookie{
 		Name:     "session_token",
 		Value:    "",
@@ -110,9 +120,7 @@ func (s *Server) logoutHandler(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 	})
 
-	utils.WriteJSON(w, r, http.StatusOK, utils.Map{
-		"success": true,
-	})
+	http.Redirect(w, r, "/", http.StatusFound)
 }
 
 func (s *Server) getSession(r *http.Request) *store.Session {

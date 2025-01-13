@@ -10,15 +10,7 @@ CREATE TABLE IF NOT EXISTS urls (
     user_id BIGINT,
     long_url VARCHAR(2048) NOT NULL,
     short_url VARCHAR(8) UNIQUE NOT NULL,
-    expires_at TIMESTAMPTZ,
+    visits INT DEFAULT 0,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE
 );
--- URL Requests Table
-CREATE TABLE IF NOT EXISTS url_requests (
-    id BIGSERIAL PRIMARY KEY,
-    url_id BIGINT NOT NULL,
-    ip_address VARCHAR(45) NOT NULL,
-    referer VARCHAR(2048) NOT NULL,
-    user_agent VARCHAR(2048) NOT NULL,
-    FOREIGN KEY (url_id) REFERENCES urls (id) ON DELETE CASCADE ON UPDATE CASCADE
-);
+CREATE UNIQUE INDEX IF NOT EXISTS id_user_id_idx ON urls (id, user_id);

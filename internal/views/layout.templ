@@ -1,20 +1,30 @@
 package views 
 
-import "github.com/AmazingAkai/URL-Shortener/internal/store"
+import (
+	"github.com/AmazingAkai/URL-Shortener/internal/store"
+	"github.com/AmazingAkai/URL-Shortener/internal/utils/constants"
+)
 
-templ Layout(session *store.Session) {
+templ Layout(contents templ.Component) {
+	{{
+		var session *store.Session
+		if s := ctx.Value(constants.SESSION_KEY); s != nil {
+			session = s.(*store.Session)
+		}
+	}}
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
 			<meta charset="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 			<meta name="htmx-config" content='{"responseHandling": [{"code":"...", "swap": true}]}'/>
-			<link rel="stylesheet" href="/static/css/tailwind.css"/>
 			<link rel="icon" href="/static/favicon.ico" type="image/x-icon"/>
+			<link rel="stylesheet" href="/static/css/tailwind.css"/>
+			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer"/>
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/htmx/2.0.4/htmx.min.js" integrity="sha512-2kIcAizYXhIn8TzUvqzEDZNuDZ+aW7yE/+f1HJHXFjQcGNfv1kqzJSTBRBSlOgp6B/KZsz1K0a3ZTqP9dnxioQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 			<title>URL Shortener</title>
-			<script src="https://unpkg.com/htmx.org@2.0.4"></script>
 		</head>
-		<body class="h-screen flex flex-col">
+		<body class="min-h-screen flex flex-col">
 			<header>
 				<nav hx-boost="true" class="bg-blue-600 flex justify-between items-center p-4">
 					<h1 class="text-white text-2xl font-bold select-none">URL Shortener</h1>
@@ -22,11 +32,15 @@ templ Layout(session *store.Session) {
 						<a href="login" class="text-white bg-blue-500 hover:bg-blue-700 px-4 py-2 rounded">
 							Login
 						</a>
+					} else {
+						<a href="logout" class="text-white bg-red-500 hover:bg-red-700 px-4 py-2 rounded">
+							Log Out
+						</a>
 					}
 				</nav>
 			</header>
 			<main class="flex-1 bg-blue-600 text-white">
-				{ children... }
+				@contents
 			</main>
 		</body>
 	</html>

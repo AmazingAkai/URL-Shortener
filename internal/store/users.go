@@ -9,9 +9,9 @@ import (
 )
 
 type User struct {
-	ID       int      `json:"id"`
-	Email    string   `json:"email"`
-	Password password `json:"-"`
+	ID       int
+	Email    string
+	Password password
 }
 
 type password struct {
