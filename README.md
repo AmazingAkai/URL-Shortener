@@ -2,11 +2,27 @@
 
 ## Setting up database
 
+## Without Docker
+
 ```sql
 CREATE ROLE url_shortener WITH LOGIN PASSWORD 'url_shortener';
 CREATE DATABASE url_shortener OWNER url_shortener;
 CREATE EXTENSION pg_trgm;
 ```
+
+## With Docker
+
+```bash
+docker compose up -d db
+```
+
+## Configuring Environment
+
+```bash
+cp .env.example .env
+```
+
+Fill `.env` with your database credentials.
 
 ### Running Migrations
 
@@ -14,25 +30,28 @@ CREATE EXTENSION pg_trgm;
 make migrate STEPS=1 # number of steps
 ```
 
-## Getting Started
+## Running (Development)
 
 Build the application
+
 ```bash
+make build-tailwind
+make build-templ
 make build
 ```
 
 Run the application
+
 ```bash
-make run
+./build/main
 ```
 
-Clean up binary from the last build:
+## Running (Production)
+
+Build the application
+
 ```bash
-make clean
+docker compose up -d
 ```
 
-Live reload the application:
-```bash
-make watch
-```
-
+Wait for docker to build the application and run it
