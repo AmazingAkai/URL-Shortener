@@ -51,7 +51,11 @@ Run the application
 Build the application
 
 ```bash
-docker compose up -d
+docker build -t url-shortener .
 ```
 
-Wait for docker to build the application and run it
+Wait for docker to build the application and run it using:
+
+```bash
+docker compose up -d
+```
