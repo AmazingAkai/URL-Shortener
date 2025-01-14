@@ -1,5 +1,7 @@
 # Project github.com/AmazingAkai/URL-Shortener
 
+A fun URL shortener built with Go, HTMX, Templ, TailwindCSS and PostgreSQL (GoTTH) stack. This url shortener also comes with browser extensions for chrome (or chrome based browsers) and firefox.
+
 ## Setting up database
 
 ## Without Docker
