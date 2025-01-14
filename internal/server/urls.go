@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 
 	"github.com/AmazingAkai/URL-Shortener/internal/store"
 	"github.com/AmazingAkai/URL-Shortener/internal/utils"
@@ -17,19 +16,12 @@ import (
 )
 
 var (
-	WEB_URL       = os.Getenv("WEB_URL")
-	RESERVED_URLS = []string{
-		"static",
-		"urls",
-		"login",
-		"register",
-		"logout",
-	}
+	WEB_URL = os.Getenv("WEB_URL")
 )
 
 type UrlCreatePayload struct {
-	ShortUrl string `schema:"short_url" validate:"required,min=5,max=30,alphanumeric"`
-	LongUrl  string `schema:"long_url" validate:"required,url"`
+	ShortUrl string `schema:"short_url" validate:"required,min=5,max=30,alphanumeric,validShortUrl"`
+	LongUrl  string `schema:"long_url" validate:"required,url,validLongUrl"`
 }
 
 func (s *Server) createShortUrlHandler(w http.ResponseWriter, r *http.Request) {
@@ -40,10 +32,6 @@ func (s *Server) createShortUrlHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := utils.ValidateStruct(payload); err != nil {
 		utils.ValidationError(w, r, err)
-		return
-	}
-	if strings.Contains(payload.LongUrl, WEB_URL) || utils.SliceContains(RESERVED_URLS, payload.ShortUrl) {
-		utils.ErrorResponse(w, r, http.StatusBadRequest, []string{"Short URL is reserved."})
 		return
 	}
 
